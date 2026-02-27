@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinted Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --surface: #fffdf7;
+    --surface2: #f0ebe0;
+    --border: #d4cfc4;
+    --accent: #09b67a;
+    --accent-dark: #077a52;
+    --text: #1a1612;
+    --text-muted: #7a7268;
+    --danger: #e05c4b;
+    --teal: #0a6b5e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 20% 50%, rgba(9,182,122,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(10,107,94,0.05) 0%, transparent 40%);
+  }
+
+  /* ── HEADER ─────────────────────────────────────────────── */
+  header {
+    padding: 1.4rem 3rem;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .header-left { display: flex; align-items: baseline; gap: 1.2rem; }
+  header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; letter-spacing: -0.02em; }
+  header h1 span { color: var(--accent); }
+  .subtitle { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.12em; }
+
+  .header-right { display: flex; align-items: center; gap: 0.8rem; }
+
+  .role-pill {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.8rem;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+  }
+
+  .role-pill.admin { background: #e6faf4; border-color: var(--accent); color: var(--accent-dark); }
+
+  .btn-header {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+  }
+
+  .btn-header:hover { border-color: var(--accent); color: var(--teal); }
+  .btn-header.logout:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* ── ADMIN LOGIN MODAL ──────────────────────────────────── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,22,18,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 1rem;
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 2.2rem 2rem 2rem;
+    width: 100%;
+    max-width: 340px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.12);
+    transform: translateY(12px);
+    transition: transform 0.2s;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .modal-field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+
+  .modal-field label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+
+  .modal-field input {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 0.9rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+
+  .modal-field input:focus { border-color: var(--accent); background: white; }
+
+  .modal-error { font-size: 0.74rem; color: var(--danger); min-height: 1rem; margin-bottom: 0.6rem; display: none; }
+  .modal-error.show { display: block; }
+
+  .modal-actions { display: flex; gap: 0.6rem; }
+
+  .btn-modal-login {
+    flex: 1;
+    background: var(--accent);
+    color: white;
+    padding: 0.65rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-modal-login:hover { background: var(--accent-dark); }
+
+  .btn-modal-cancel {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.65rem 1rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-modal-cancel:hover { border-color: var(--text-muted); }
+
+  /* ── MAIN CONTENT ───────────────────────────────────────── */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+    display: grid;
+    gap: 2rem;
+  }
+
+  .add-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1.8rem;
+  }
+
+  .add-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    margin-bottom: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .add-card h2::before {
+    content: '+';
+    width: 26px; height: 26px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 2.5fr 1fr 1fr auto;
+    gap: 0.8rem;
+    align-items: end;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+
+  input {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 0.9rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+    transition: border-color 0.15s;
+    outline: none;
+  }
+
+  input:focus { border-color: var(--accent); background: white; }
+  input::placeholder { color: var(--text-muted); }
+  button { font-family: 'DM Mono', monospace; cursor: pointer; border: none; border-radius: 8px; transition: all 0.15s; }
+
+  .btn-add {
+    background: var(--accent);
+    color: white;
+    padding: 0.65rem 1.4rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .btn-add:hover { background: var(--accent-dark); transform: translateY(-1px); }
+
+  .viewer-notice {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.4rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .totals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .total-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .total-card.grand { border-color: var(--accent); background: linear-gradient(135deg, #f0fdf8, #e6faf4); }
+
+  .total-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 3px; width: 100%;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+
+  .total-card:hover::after { transform: scaleX(1); }
+
+  .total-name { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.3rem; }
+  .total-amount { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--teal); }
+  .total-count { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+  .table-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .table-header {
+    padding: 1.2rem 1.8rem;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .table-header h2 { font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+  .filter-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  .filter-btn {
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1.5px solid var(--border);
+    padding: 0.35rem 0.9rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-radius: 100px;
+  }
+
+  .filter-btn.active, .filter-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  th {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    padding: 0.8rem 1.8rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  td {
+    padding: 0.9rem 1.8rem;
+    font-size: 0.82rem;
+    border-bottom: 1px solid var(--surface2);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #faf7f0; }
+
+  .article-link {
+    color: var(--teal);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-width: 280px;
+  }
+
+  .article-link:hover { text-decoration: underline; }
+  .link-icon { flex-shrink: 0; opacity: 0.5; }
+
+  .person-badge {
+    display: inline-block;
+    padding: 0.2rem 0.7rem;
+    border-radius: 100px;
+    font-size: 0.72rem;
+    font-weight: 500;
+  }
+
+  .price-cell { font-weight: 500; color: var(--teal); }
+
+  .btn-delete {
+    background: transparent;
+    color: var(--border);
+    font-size: 1rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-delete:hover { color: var(--danger); background: #fdf0ee; }
+
+  .empty-state { padding: 3rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+  .empty-state p:first-child { font-size: 2rem; margin-bottom: 0.5rem; }
+
+  @media (max-width: 700px) {
+    .form-row { grid-template-columns: 1fr 1fr; }
+    .form-row .field:first-child { grid-column: 1 / -1; }
+    header { padding: 1.2rem 1.5rem; }
+    .header-left { flex-direction: column; gap: 0.2rem; }
+    td, th { padding: 0.7rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header>
+  <div class="header-left">
+    <h1>Vinted <span>Tracker</span></h1>
+    <span class="subtitle">Purchase log &amp; split calculator</span>
+  </div>
+  <div class="header-right">
+    <span class="role-pill" id="role-pill">Viewer</span>
+    <button class="btn-header" id="auth-btn" onclick="handleAuthBtn()">Admin login</button>
+  </div>
+</header>
+
+<!-- ══════════════ ADMIN LOGIN MODAL ══════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <h2>Admin sign in</h2>
+    <div class="modal-field">
+      <label>Password</label>
+      <input type="password" id="modal-pass" placeholder="Enter admin password" autocomplete="current-password" />
+    </div>
+    <div class="modal-error" id="modal-error">Incorrect password.</div>
+    <div class="modal-actions">
+      <button class="btn-modal-login" onclick="doLogin()">Sign in →</button>
+      <button class="btn-modal-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN APP ══════════════ -->
+<div class="container">
+
+  <!-- Admin: add form (hidden for viewers) -->
+  <div class="add-card" id="add-card" style="display:none">
+    <h2>Add Purchase</h2>
+    <div class="form-row">
+      <div class="field">
+        <label>Vinted Article Link</label>
+        <input type="url" id="inp-link" placeholder="https://www.vinted.fr/items/..." />
+      </div>
+      <div class="field">
+        <label>Price (€)</label>
+        <input type="number" id="inp-price" placeholder="0.00" step="0.01" min="0" />
+      </div>
+      <div class="field">
+        <label>Person</label>
+        <input type="text" id="inp-person" placeholder="Name" list="persons-list" />
+        <datalist id="persons-list"></datalist>
+      </div>
+      <button class="btn-add" onclick="addItem()">Add →</button>
+    </div>
+  </div>
+
+  <!-- Viewer notice (shown for non-admins) -->
+  <div class="viewer-notice" id="viewer-notice">
+    <span>👁️</span>
+    You are in view-only mode. Only the admin can add or remove items.
+  </div>
+
+  <!-- Totals -->
+  <div id="totals-grid" class="totals-grid"></div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <h2>Purchases</h2>
+      <div class="filter-row" id="filter-row">
+        <button class="filter-btn active" onclick="setFilter(null, this)">All</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Article</th>
+          <th>Person</th>
+          <th>Price</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <div id="empty-state" class="empty-state" style="display:none">
+      <p>🛍️</p>
+      <p>No purchases yet.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const ADMIN_PASS = 'admin123';
+
+  let isAdmin = false;
+  let items = JSON.parse(localStorage.getItem('vinted_items') || '[]');
+  let activeFilter = null;
+
+  const palette = [
+    ['#e8f5e9','#2e7d32'],['#e3f2fd','#1565c0'],['#fce4ec','#880e4f'],
+    ['#fff3e0','#e65100'],['#f3e5f5','#6a1b9a'],['#e0f2f1','#00695c'],
+    ['#fff8e1','#f57f17'],['#e8eaf6','#283593'],['#fbe9e7','#bf360c'],['#e1f5fe','#01579b'],
+  ];
+  const personColors = {};
+  let colorIdx = 0;
+
+  function getColor(name) {
+    if (!personColors[name]) personColors[name] = palette[colorIdx++ % palette.length];
+    return personColors[name];
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function shortLink(url) {
+    try {
+      const p = new URL(url).pathname.split('/').filter(Boolean);
+      const s = p.slice(-1)[0] || new URL(url).hostname;
+      return s.length > 34 ? s.slice(0,32)+'…' : s;
+    } catch { return String(url).slice(0,34)+'…'; }
+  }
+
+  function save() { localStorage.setItem('vinted_items', JSON.stringify(items)); }
+
+  // ── Auth ───────────────────────────────────────────────────
+  function handleAuthBtn() {
+    if (isAdmin) { doLogout(); } else { openModal(); }
+  }
+
+  function openModal() {
+    document.getElementById('modal-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('modal-pass').focus(), 50);
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+    document.getElementById('modal-pass').value = '';
+    document.getElementById('modal-error').classList.remove('show');
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  document.getElementById('modal-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  function doLogin() {
+    const pass = document.getElementById('modal-pass').value;
+    if (pass === ADMIN_PASS) {
+      isAdmin = true;
+      closeModal();
+      updateUI();
+    } else {
+      document.getElementById('modal-error').classList.add('show');
+      document.getElementById('modal-pass').focus();
+    }
+  }
+
+  function doLogout() {
+    isAdmin = false;
+    updateUI();
+  }
+
+  function updateUI() {
+    const pill = document.getElementById('role-pill');
+    const authBtn = document.getElementById('auth-btn');
+
+    if (isAdmin) {
+      pill.textContent = 'Admin';
+      pill.classList.add('admin');
+      authBtn.textContent = 'Sign out';
+      authBtn.classList.add('logout');
+      document.getElementById('add-card').style.display = 'block';
+      document.getElementById('viewer-notice').style.display = 'none';
+    } else {
+      pill.textContent = 'Viewer';
+      pill.classList.remove('admin');
+      authBtn.textContent = 'Admin login';
+      authBtn.classList.remove('logout');
+      document.getElementById('add-card').style.display = 'none';
+      document.getElementById('viewer-notice').style.display = 'flex';
+    }
+    render();
+  }
+
+  // ── Add / Delete ───────────────────────────────────────────
+  function addItem() {
+    if (!isAdmin) return;
+    const link   = document.getElementById('inp-link').value.trim();
+    const price  = parseFloat(document.getElementById('inp-price').value);
+    const person = document.getElementById('inp-person').value.trim();
+    if (!link || isNaN(price) || price < 0 || !person) { alert('Please fill in all fields.'); return; }
+    items.push({ id: Date.now(), link, price, person });
+    save();
+    document.getElementById('inp-link').value = '';
+    document.getElementById('inp-price').value = '';
+    document.getElementById('inp-person').value = '';
+    render();
+  }
+
+  function deleteItem(id) {
+    if (!isAdmin) return;
+    items = items.filter(i => i.id !== id);
+    save();
+    render();
+  }
+
+  ['inp-link','inp-price','inp-person'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
+  });
+
+  // ── Filter ─────────────────────────────────────────────────
+  function setFilter(person, btn) {
+    activeFilter = person;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTable();
+  }
+
+  // ── Render ─────────────────────────────────────────────────
+  function render() {
+    renderTotals();
+    renderFilters();
+    renderTable();
+    renderDatalist();
+  }
+
+  function renderTotals() {
+    const byPerson = {};
+    let grand = 0;
+    items.forEach(item => {
+      if (!byPerson[item.person]) byPerson[item.person] = { total: 0, count: 0 };
+      byPerson[item.person].total += item.price;
+      byPerson[item.person].count++;
+      grand += item.price;
+    });
+
+    let html = Object.entries(byPerson).sort((a,b) => a[0].localeCompare(b[0])).map(([name, d]) => {
+      const [bg, color] = getColor(name);
+      return `<div class="total-card" style="border-color:${color}40">
+        <div class="total-name">${esc(name)}</div>
+        <div class="total-amount" style="color:${color}">€${d.total.toFixed(2)}</div>
+        <div class="total-count">${d.count} item${d.count>1?'s':''}</div>
+      </div>`;
+    }).join('');
+
+    if (items.length > 0) {
+      html += `<div class="total-card grand">
+        <div class="total-name">Grand Total</div>
+        <div class="total-amount">€${grand.toFixed(2)}</div>
+        <div class="total-count">${items.length} item${items.length>1?'s':''}</div>
+      </div>`;
+    }
+    document.getElementById('totals-grid').innerHTML = html;
+  }
+
+  function renderFilters() {
+    const people = [...new Set(items.map(i => i.person))].sort();
+    let html = `<button class="filter-btn ${activeFilter===null?'active':''}" onclick="setFilter(null, this)">All</button>`;
+    people.forEach(p => {
+      html += `<button class="filter-btn ${activeFilter===p?'active':''}" onclick="setFilter(${JSON.stringify(p)}, this)">${esc(p)}</button>`;
+    });
+    document.getElementById('filter-row').innerHTML = html;
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('table-body');
+    const empty = document.getElementById('empty-state');
+    const filtered = activeFilter ? items.filter(i => i.person === activeFilter) : items;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    tbody.innerHTML = filtered.map((item, idx) => {
+      const [bg, color] = getColor(item.person);
+      const deleteBtn = isAdmin
+        ? `<button class="btn-delete" onclick="deleteItem(${item.id})" title="Remove">✕</button>`
+        : '';
+      return `<tr>
+        <td style="color:var(--text-muted);font-size:0.72rem">${idx+1}</td>
+        <td><a class="article-link" href="${esc(item.link)}" target="_blank" rel="noopener">
+          <svg class="link-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>${esc(shortLink(item.link))}</a></td>
+        <td><span class="person-badge" style="background:${bg};color:${color}">${esc(item.person)}</span></td>
+        <td class="price-cell">€${Number(item.price).toFixed(2)}</td>
+        <td>${deleteBtn}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderDatalist() {
+    const people = [...new Set(items.map(i => i.person))];
+    const dl = document.getElementById('persons-list');
+    if (dl) dl.innerHTML = people.map(p => `<option value="${esc(p)}">`).join('');
+  }
+
+  // Initial render (viewer mode by default)
+  render();
+</script>
+</body>
+</html>
