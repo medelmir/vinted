@@ -31,6 +31,27 @@
       radial-gradient(circle at 80% 20%, rgba(10,107,94,0.05) 0%, transparent 40%);
   }
 
+  /* ── SETUP BANNER ───────────────────────────────────────── */
+  #setup-banner {
+    background: #fff8e1;
+    border-bottom: 2px solid #f9a825;
+    padding: 0.9rem 2rem;
+    font-size: 0.78rem;
+    color: #7a5800;
+    display: none;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  #setup-banner.show { display: flex; }
+  #setup-banner strong { color: #e65100; }
+  #setup-banner code {
+    background: #fff3e0;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+
   /* ── HEADER ─────────────────────────────────────────────── */
   header {
     padding: 1.4rem 3rem;
@@ -43,12 +64,33 @@
     flex-wrap: wrap;
   }
 
-  .header-left { display: flex; align-items: baseline; gap: 1.2rem; }
+  .header-left { display: flex; align-items: baseline; gap: 1.2rem; flex-wrap: wrap; }
   header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; letter-spacing: -0.02em; }
   header h1 span { color: var(--accent); }
   .subtitle { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.12em; }
 
   .header-right { display: flex; align-items: center; gap: 0.8rem; }
+
+  .sync-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  .sync-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #ccc;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .sync-dot.ok  { background: var(--accent); box-shadow: 0 0 5px rgba(9,182,122,0.5); }
+  .sync-dot.err { background: var(--danger); }
+  .sync-dot.loading { background: #f9a825; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
   .role-pill {
     font-size: 0.68rem;
@@ -60,7 +102,6 @@
     background: var(--surface2);
     color: var(--text-muted);
   }
-
   .role-pill.admin { background: #e6faf4; border-color: var(--accent); color: var(--accent-dark); }
 
   .btn-header {
@@ -74,11 +115,10 @@
     background: transparent;
     color: var(--text-muted);
   }
-
   .btn-header:hover { border-color: var(--accent); color: var(--teal); }
   .btn-header.logout:hover { border-color: var(--danger); color: var(--danger); }
 
-  /* ── ADMIN LOGIN MODAL ──────────────────────────────────── */
+  /* ── MODAL ──────────────────────────────────────────────── */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -93,7 +133,6 @@
     pointer-events: none;
     transition: opacity 0.2s;
   }
-
   .modal-overlay.open { opacity: 1; pointer-events: all; }
 
   .modal {
@@ -107,19 +146,11 @@
     transform: translateY(12px);
     transition: transform 0.2s;
   }
-
   .modal-overlay.open .modal { transform: translateY(0); }
-
-  .modal h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.3rem;
-    margin-bottom: 1.4rem;
-  }
+  .modal h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 1.4rem; }
 
   .modal-field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
-
   .modal-field label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
-
   .modal-field input {
     background: var(--surface2);
     border: 1.5px solid var(--border);
@@ -132,7 +163,6 @@
     transition: border-color 0.15s;
     width: 100%;
   }
-
   .modal-field input:focus { border-color: var(--accent); background: white; }
 
   .modal-error { font-size: 0.74rem; color: var(--danger); min-height: 1rem; margin-bottom: 0.6rem; display: none; }
@@ -153,7 +183,6 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-
   .btn-modal-login:hover { background: var(--accent-dark); }
 
   .btn-modal-cancel {
@@ -167,10 +196,9 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-
   .btn-modal-cancel:hover { border-color: var(--text-muted); }
 
-  /* ── MAIN CONTENT ───────────────────────────────────────── */
+  /* ── MAIN ───────────────────────────────────────────────── */
   .container {
     max-width: 1100px;
     margin: 0 auto;
@@ -185,7 +213,6 @@
     border-radius: 12px;
     padding: 1.8rem;
   }
-
   .add-card h2 {
     font-family: 'Playfair Display', serif;
     font-size: 1.2rem;
@@ -194,7 +221,6 @@
     align-items: center;
     gap: 0.6rem;
   }
-
   .add-card h2::before {
     content: '+';
     width: 26px; height: 26px;
@@ -228,9 +254,9 @@
     transition: border-color 0.15s;
     outline: none;
   }
-
   input:focus { border-color: var(--accent); background: white; }
   input::placeholder { color: var(--text-muted); }
+
   button { font-family: 'DM Mono', monospace; cursor: pointer; border: none; border-radius: 8px; transition: all 0.15s; }
 
   .btn-add {
@@ -241,8 +267,8 @@
     font-weight: 500;
     white-space: nowrap;
   }
-
   .btn-add:hover { background: var(--accent-dark); transform: translateY(-1px); }
+  .btn-add:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
   .viewer-notice {
     background: var(--surface);
@@ -270,9 +296,7 @@
     position: relative;
     overflow: hidden;
   }
-
   .total-card.grand { border-color: var(--accent); background: linear-gradient(135deg, #f0fdf8, #e6faf4); }
-
   .total-card::after {
     content: '';
     position: absolute;
@@ -283,9 +307,7 @@
     transform-origin: left;
     transition: transform 0.3s;
   }
-
   .total-card:hover::after { transform: scaleX(1); }
-
   .total-name { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.3rem; }
   .total-amount { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--teal); }
   .total-count { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; }
@@ -306,7 +328,6 @@
     flex-wrap: wrap;
     gap: 0.8rem;
   }
-
   .table-header h2 { font-family: 'Playfair Display', serif; font-size: 1.1rem; }
   .filter-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
@@ -320,11 +341,9 @@
     letter-spacing: 0.08em;
     border-radius: 100px;
   }
-
   .filter-btn.active, .filter-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
 
   table { width: 100%; border-collapse: collapse; }
-
   th {
     font-size: 0.65rem;
     text-transform: uppercase;
@@ -335,14 +354,12 @@
     border-bottom: 1px solid var(--border);
     background: var(--surface2);
   }
-
   td {
     padding: 0.9rem 1.8rem;
     font-size: 0.82rem;
     border-bottom: 1px solid var(--surface2);
     vertical-align: middle;
   }
-
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #faf7f0; }
 
@@ -354,7 +371,6 @@
     gap: 0.4rem;
     max-width: 280px;
   }
-
   .article-link:hover { text-decoration: underline; }
   .link-icon { flex-shrink: 0; opacity: 0.5; }
 
@@ -378,11 +394,13 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-
   .btn-delete:hover { color: var(--danger); background: #fdf0ee; }
 
   .empty-state { padding: 3rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
   .empty-state p:first-child { font-size: 2rem; margin-bottom: 0.5rem; }
+
+  .skeleton-row td { background: linear-gradient(90deg, var(--surface2) 25%, var(--bg) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; height: 44px; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
   @media (max-width: 700px) {
     .form-row { grid-template-columns: 1fr 1fr; }
@@ -390,24 +408,36 @@
     header { padding: 1.2rem 1.5rem; }
     .header-left { flex-direction: column; gap: 0.2rem; }
     td, th { padding: 0.7rem 1rem; }
+    .sync-indicator span { display: none; }
   }
 </style>
 </head>
 <body>
 
-<!-- ══════════════ HEADER ══════════════ -->
+<!-- Setup warning -->
+<div id="setup-banner">
+  ⚠️ <strong>JSONBin not configured.</strong>
+  Open <code>index.html</code>, find the CONFIG section and paste your
+  <code>JSONBIN_API_KEY</code> and <code>JSONBIN_BIN_ID</code>.
+</div>
+
+<!-- Header -->
 <header>
   <div class="header-left">
     <h1>Vinted <span>Tracker</span></h1>
     <span class="subtitle">Purchase log &amp; split calculator</span>
   </div>
   <div class="header-right">
+    <div class="sync-indicator">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">Loading…</span>
+    </div>
     <span class="role-pill" id="role-pill">Viewer</span>
     <button class="btn-header" id="auth-btn" onclick="handleAuthBtn()">Admin login</button>
   </div>
 </header>
 
-<!-- ══════════════ ADMIN LOGIN MODAL ══════════════ -->
+<!-- Admin login modal -->
 <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
   <div class="modal">
     <h2>Admin sign in</h2>
@@ -423,10 +453,10 @@
   </div>
 </div>
 
-<!-- ══════════════ MAIN APP ══════════════ -->
+<!-- Main content -->
 <div class="container">
 
-  <!-- Admin: add form (hidden for viewers) -->
+  <!-- Admin: add form -->
   <div class="add-card" id="add-card" style="display:none">
     <h2>Add Purchase</h2>
     <div class="form-row">
@@ -443,14 +473,14 @@
         <input type="text" id="inp-person" placeholder="Name" list="persons-list" />
         <datalist id="persons-list"></datalist>
       </div>
-      <button class="btn-add" onclick="addItem()">Add →</button>
+      <button class="btn-add" id="btn-add" onclick="addItem()">Add →</button>
     </div>
   </div>
 
-  <!-- Viewer notice (shown for non-admins) -->
+  <!-- Viewer notice -->
   <div class="viewer-notice" id="viewer-notice">
     <span>👁️</span>
-    You are in view-only mode. Only the admin can add or remove items.
+    View-only mode — only the admin can add or remove items.
   </div>
 
   <!-- Totals -->
@@ -474,7 +504,12 @@
           <th></th>
         </tr>
       </thead>
-      <tbody id="table-body"></tbody>
+      <tbody id="table-body">
+        <!-- skeleton rows while loading -->
+        <tr class="skeleton-row"><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr class="skeleton-row"><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr class="skeleton-row"><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
     </table>
     <div id="empty-state" class="empty-state" style="display:none">
       <p>🛍️</p>
@@ -485,11 +520,28 @@
 </div>
 
 <script>
-  const ADMIN_PASS = 'admin123';
+  // ╔══════════════════════════════════════════════════════╗
+  //   🔧 CONFIG — paste your JSONBin credentials here
+  // ╚══════════════════════════════════════════════════════╝
+  const JSONBIN_API_KEY = '$2a$10$yGW.EYmw0Y7d6OLBtYd4mOj/QlRiT5rAHtmcos2Jso6Hw3QskHg9i';
+  const JSONBIN_BIN_ID  = '69a1d20cd0ea881f40df91b1';
+  const ADMIN_PASS      = 'admin123';
+  // ═══════════════════════════════════════════════════════
 
+  const BIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+  const HEADERS = {
+    'Content-Type': 'application/json',
+    'X-Master-Key': JSONBIN_API_KEY,
+    'X-Bin-Versioning': 'false'   // always overwrite, no version history
+  };
+
+  const configured = !JSONBIN_API_KEY.includes('PASTE') && !JSONBIN_BIN_ID.includes('PASTE');
+
+  // ── State ──────────────────────────────────────────────
+  let items = [];
   let isAdmin = false;
-  let items = JSON.parse(localStorage.getItem('vinted_items') || '[]');
   let activeFilter = null;
+  let saving = false;
 
   const palette = [
     ['#e8f5e9','#2e7d32'],['#e3f2fd','#1565c0'],['#fce4ec','#880e4f'],
@@ -516,11 +568,63 @@
     } catch { return String(url).slice(0,34)+'…'; }
   }
 
-  function save() { localStorage.setItem('vinted_items', JSON.stringify(items)); }
+  // ── JSONBin API ────────────────────────────────────────
+  function setSyncStatus(state, text) {
+    const dot = document.getElementById('sync-dot');
+    dot.className = 'sync-dot ' + state;
+    document.getElementById('sync-label').textContent = text;
+  }
 
-  // ── Auth ───────────────────────────────────────────────────
+  async function loadData() {
+    if (!configured) {
+      document.getElementById('setup-banner').classList.add('show');
+      setSyncStatus('err', 'Not configured');
+      document.getElementById('table-body').innerHTML = '';
+      document.getElementById('empty-state').style.display = 'block';
+      return;
+    }
+
+    setSyncStatus('loading', 'Loading…');
+    try {
+      const res = await fetch(BIN_URL + '/latest', { headers: { 'X-Master-Key': JSONBIN_API_KEY } });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      items = Array.isArray(json.record) ? json.record : [];
+      setSyncStatus('ok', 'Synced');
+      render();
+    } catch (e) {
+      setSyncStatus('err', 'Load error');
+      console.error(e);
+      document.getElementById('table-body').innerHTML = '';
+      document.getElementById('empty-state').style.display = 'block';
+    }
+  }
+
+  async function saveData() {
+    if (!configured || saving) return;
+    saving = true;
+    setSyncStatus('loading', 'Saving…');
+    document.getElementById('btn-add').disabled = true;
+    try {
+      const res = await fetch(BIN_URL, {
+        method: 'PUT',
+        headers: HEADERS,
+        body: JSON.stringify(items)
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      setSyncStatus('ok', 'Saved ✓');
+    } catch (e) {
+      setSyncStatus('err', 'Save error');
+      console.error(e);
+    } finally {
+      saving = false;
+      document.getElementById('btn-add').disabled = false;
+    }
+  }
+
+  // ── Auth ───────────────────────────────────────────────
   function handleAuthBtn() {
-    if (isAdmin) { doLogout(); } else { openModal(); }
+    isAdmin ? doLogout() : openModal();
   }
 
   function openModal() {
@@ -538,20 +642,14 @@
     if (e.target === document.getElementById('modal-overlay')) closeModal();
   }
 
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal();
-  });
-
-  document.getElementById('modal-pass').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin();
-  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  document.getElementById('modal-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
   function doLogin() {
-    const pass = document.getElementById('modal-pass').value;
-    if (pass === ADMIN_PASS) {
+    if (document.getElementById('modal-pass').value === ADMIN_PASS) {
       isAdmin = true;
       closeModal();
-      updateUI();
+      updateAdminUI();
     } else {
       document.getElementById('modal-error').classList.add('show');
       document.getElementById('modal-pass').focus();
@@ -560,13 +658,12 @@
 
   function doLogout() {
     isAdmin = false;
-    updateUI();
+    updateAdminUI();
   }
 
-  function updateUI() {
+  function updateAdminUI() {
     const pill = document.getElementById('role-pill');
     const authBtn = document.getElementById('auth-btn');
-
     if (isAdmin) {
       pill.textContent = 'Admin';
       pill.classList.add('admin');
@@ -585,26 +682,26 @@
     render();
   }
 
-  // ── Add / Delete ───────────────────────────────────────────
-  function addItem() {
-    if (!isAdmin) return;
+  // ── Add / Delete ───────────────────────────────────────
+  async function addItem() {
+    if (!isAdmin || !configured) return;
     const link   = document.getElementById('inp-link').value.trim();
     const price  = parseFloat(document.getElementById('inp-price').value);
     const person = document.getElementById('inp-person').value.trim();
     if (!link || isNaN(price) || price < 0 || !person) { alert('Please fill in all fields.'); return; }
     items.push({ id: Date.now(), link, price, person });
-    save();
     document.getElementById('inp-link').value = '';
     document.getElementById('inp-price').value = '';
     document.getElementById('inp-person').value = '';
     render();
+    await saveData();
   }
 
-  function deleteItem(id) {
+  async function deleteItem(id) {
     if (!isAdmin) return;
     items = items.filter(i => i.id !== id);
-    save();
     render();
+    await saveData();
   }
 
   ['inp-link','inp-price','inp-person'].forEach(id => {
@@ -612,7 +709,7 @@
     if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
   });
 
-  // ── Filter ─────────────────────────────────────────────────
+  // ── Filter ─────────────────────────────────────────────
   function setFilter(person, btn) {
     activeFilter = person;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -620,7 +717,7 @@
     renderTable();
   }
 
-  // ── Render ─────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────
   function render() {
     renderTotals();
     renderFilters();
@@ -637,16 +734,14 @@
       byPerson[item.person].count++;
       grand += item.price;
     });
-
-    let html = Object.entries(byPerson).sort((a,b) => a[0].localeCompare(b[0])).map(([name, d]) => {
-      const [bg, color] = getColor(name);
+    let html = Object.entries(byPerson).sort((a,b)=>a[0].localeCompare(b[0])).map(([name,d]) => {
+      const [bg,color] = getColor(name);
       return `<div class="total-card" style="border-color:${color}40">
         <div class="total-name">${esc(name)}</div>
         <div class="total-amount" style="color:${color}">€${d.total.toFixed(2)}</div>
         <div class="total-count">${d.count} item${d.count>1?'s':''}</div>
       </div>`;
     }).join('');
-
     if (items.length > 0) {
       html += `<div class="total-card grand">
         <div class="total-name">Grand Total</div>
@@ -658,10 +753,10 @@
   }
 
   function renderFilters() {
-    const people = [...new Set(items.map(i => i.person))].sort();
-    let html = `<button class="filter-btn ${activeFilter===null?'active':''}" onclick="setFilter(null, this)">All</button>`;
+    const people = [...new Set(items.map(i=>i.person))].sort();
+    let html = `<button class="filter-btn ${activeFilter===null?'active':''}" onclick="setFilter(null,this)">All</button>`;
     people.forEach(p => {
-      html += `<button class="filter-btn ${activeFilter===p?'active':''}" onclick="setFilter(${JSON.stringify(p)}, this)">${esc(p)}</button>`;
+      html += `<button class="filter-btn ${activeFilter===p?'active':''}" onclick="setFilter(${JSON.stringify(p)},this)">${esc(p)}</button>`;
     });
     document.getElementById('filter-row').innerHTML = html;
   }
@@ -669,7 +764,7 @@
   function renderTable() {
     const tbody = document.getElementById('table-body');
     const empty = document.getElementById('empty-state');
-    const filtered = activeFilter ? items.filter(i => i.person === activeFilter) : items;
+    const filtered = activeFilter ? items.filter(i=>i.person===activeFilter) : items;
 
     if (filtered.length === 0) {
       tbody.innerHTML = '';
@@ -677,12 +772,9 @@
       return;
     }
     empty.style.display = 'none';
-
-    tbody.innerHTML = filtered.map((item, idx) => {
-      const [bg, color] = getColor(item.person);
-      const deleteBtn = isAdmin
-        ? `<button class="btn-delete" onclick="deleteItem(${item.id})" title="Remove">✕</button>`
-        : '';
+    tbody.innerHTML = filtered.map((item,idx) => {
+      const [bg,color] = getColor(item.person);
+      const del = isAdmin ? `<button class="btn-delete" onclick="deleteItem(${item.id})" title="Remove">✕</button>` : '';
       return `<tr>
         <td style="color:var(--text-muted);font-size:0.72rem">${idx+1}</td>
         <td><a class="article-link" href="${esc(item.link)}" target="_blank" rel="noopener">
@@ -692,19 +784,19 @@
           </svg>${esc(shortLink(item.link))}</a></td>
         <td><span class="person-badge" style="background:${bg};color:${color}">${esc(item.person)}</span></td>
         <td class="price-cell">€${Number(item.price).toFixed(2)}</td>
-        <td>${deleteBtn}</td>
+        <td>${del}</td>
       </tr>`;
     }).join('');
   }
 
   function renderDatalist() {
-    const people = [...new Set(items.map(i => i.person))];
+    const people = [...new Set(items.map(i=>i.person))];
     const dl = document.getElementById('persons-list');
-    if (dl) dl.innerHTML = people.map(p => `<option value="${esc(p)}">`).join('');
+    if (dl) dl.innerHTML = people.map(p=>`<option value="${esc(p)}">`).join('');
   }
 
-  // Initial render (viewer mode by default)
-  render();
+  // ── Boot ───────────────────────────────────────────────
+  loadData();
 </script>
 </body>
 </html>
