@@ -130,7 +130,7 @@
     content: '+'; width: 24px; height: 24px; background: var(--accent); color: white;
     border-radius: 50%; display: grid; place-items: center; font-size: 0.95rem; flex-shrink: 0;
   }
-  .form-row { display: grid; grid-template-columns: 2.5fr 1fr 1fr auto; gap: 0.7rem; align-items: end; }
+  .form-row { display: grid; grid-template-columns: 2.3fr 1fr 1fr 1.25fr auto; gap: 0.7rem; align-items: end; }
   .field { display: flex; flex-direction: column; gap: 0.3rem; }
   label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
   input {
@@ -141,9 +141,37 @@
   input:focus { border-color: var(--accent); background: white; }
   input::placeholder { color: var(--text-muted); }
   button { font-family: 'DM Mono', monospace; cursor: pointer; border: none; border-radius: 8px; transition: all 0.15s; }
+  .status-toggle {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem;
+  }
+  .status-btn {
+    background: var(--surface2); color: var(--text-muted); border: 1.5px solid var(--border);
+    padding: 0.6rem 0.4rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .status-btn:hover { border-color: var(--accent); color: var(--teal); }
+  .status-btn.active {
+    background: var(--accent); border-color: var(--accent); color: white;
+  }
+  .delivery-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0.18rem 0.65rem; border-radius: 100px; font-size: 0.64rem;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .delivery-badge.delivered {
+    background: #e6faf4; color: var(--accent-dark); border: 1px solid #b8ead9;
+  }
+  .delivery-badge.pending {
+    background: #fff3e0; color: #b26a00; border: 1px solid #f2d29f;
+  }
   .btn-add { background: var(--accent); color: white; padding: 0.6rem 1.3rem; font-size: 0.85rem; font-weight: 500; white-space: nowrap; }
   .btn-add:hover { background: var(--accent-dark); transform: translateY(-1px); }
   .btn-add:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-secondary {
+    background: transparent; color: var(--text-muted); border: 1.5px solid var(--border);
+    padding: 0.6rem 1rem; font-size: 0.8rem; white-space: nowrap;
+  }
+  .btn-secondary:hover { border-color: var(--teal); color: var(--teal); }
 
   /* ── VIEWER NOTICE ── */
   .viewer-notice {
@@ -205,6 +233,14 @@
     background: transparent; color: var(--border); font-size: 1rem;
     padding: 0.2rem 0.45rem; border-radius: 6px; border: none; cursor: pointer; transition: all 0.15s;
   }
+  .row-actions {
+    display: flex; align-items: center; justify-content: flex-end; gap: 0.25rem;
+  }
+  .btn-edit {
+    background: transparent; color: var(--text-muted); border: 1px solid var(--border);
+    padding: 0.2rem 0.55rem; border-radius: 6px; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .btn-edit:hover { border-color: var(--teal); color: var(--teal); background: #eef8f6; }
   .btn-delete:hover { color: var(--danger); background: #fdf0ee; }
 
   /* ── MOBILE CARD LIST ── */
@@ -245,8 +281,9 @@
 
     .add-card { padding: 1.1rem; }
     .form-row { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-    .form-row .field:first-child { grid-column: 1 / -1; }
-    .btn-add { grid-column: 1 / -1; width: 100%; padding: 0.72rem; }
+    .form-row .field:first-child,
+    .form-row .status-field { grid-column: 1 / -1; }
+    .btn-add, .btn-secondary { grid-column: 1 / -1; width: 100%; padding: 0.72rem; }
 
     .totals-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
     .total-card { padding: 0.85rem 1rem; }
@@ -300,7 +337,7 @@
 <div class="container">
 
   <div class="add-card" id="add-card" style="display:none">
-    <h2>Add Purchase</h2>
+    <h2 id="form-title">Add Purchase</h2>
     <div class="form-row">
       <div class="field">
         <label>Vinted Article Link</label>
@@ -315,7 +352,15 @@
         <input type="text" id="inp-person" placeholder="Name" list="persons-list" />
         <datalist id="persons-list"></datalist>
       </div>
+      <div class="field status-field">
+        <label>Livraison</label>
+        <div class="status-toggle" id="delivery-toggle">
+          <button type="button" class="status-btn active" data-status="non-livre" onclick="setDeliveryStatus('non-livre')">Non livré</button>
+          <button type="button" class="status-btn" data-status="livre" onclick="setDeliveryStatus('livre')">Livré</button>
+        </div>
+      </div>
       <button class="btn-add" id="btn-add" onclick="addItem()">Add →</button>
+      <button type="button" class="btn-secondary" id="btn-cancel-edit" onclick="cancelEdit()" style="display:none">Cancel</button>
     </div>
   </div>
 
@@ -347,13 +392,14 @@
           <th>Article</th>
           <th>Person</th>
           <th>Price</th>
+          <th>Livraison</th>
           <th></th>
         </tr>
       </thead>
       <tbody id="table-body">
-        <tr class="skeleton-row"><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr class="skeleton-row"><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr class="skeleton-row"><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr class="skeleton-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr class="skeleton-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr class="skeleton-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
       </tbody>
     </table>
 
@@ -381,7 +427,7 @@
   const HEADERS = { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY, 'X-Bin-Versioning': 'false' };
   const configured = !JSONBIN_API_KEY.includes('PASTE') && !JSONBIN_BIN_ID.includes('PASTE');
 
-  let items = [], isAdmin = false, activeFilter = null, saving = false;
+  let items = [], isAdmin = false, activeFilter = null, saving = false, draftDeliveryStatus = 'non-livre', editingItemId = null;
 
   const palette = [
     ['#e8f5e9','#2e7d32'],['#e3f2fd','#1565c0'],['#fce4ec','#880e4f'],
@@ -398,6 +444,60 @@
 
   function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function normalizeDeliveryStatus(status) {
+    return status === 'livre' ? 'livre' : 'non-livre';
+  }
+
+  function getDeliveryMeta(status) {
+    return normalizeDeliveryStatus(status) === 'livre'
+      ? { label: 'Livré', className: 'delivered' }
+      : { label: 'Non livré', className: 'pending' };
+  }
+
+  function setDeliveryStatus(status) {
+    draftDeliveryStatus = normalizeDeliveryStatus(status);
+    document.querySelectorAll('#delivery-toggle .status-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.status === draftDeliveryStatus);
+    });
+  }
+
+  function resetForm() {
+    document.getElementById('inp-link').value = '';
+    document.getElementById('inp-price').value = '';
+    document.getElementById('inp-person').value = '';
+    setDeliveryStatus('non-livre');
+  }
+
+  function updateFormMode() {
+    const title = document.getElementById('form-title');
+    const submitBtn = document.getElementById('btn-add');
+    const cancelBtn = document.getElementById('btn-cancel-edit');
+    const editing = editingItemId !== null;
+    title.textContent = editing ? 'Edit Purchase' : 'Add Purchase';
+    submitBtn.textContent = editing ? 'Save changes' : 'Add →';
+    cancelBtn.style.display = editing ? 'inline-block' : 'none';
+  }
+
+  function startEdit(id) {
+    if (!isAdmin) return;
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    editingItemId = id;
+    document.getElementById('inp-link').value = item.link;
+    document.getElementById('inp-price').value = item.price;
+    document.getElementById('inp-person').value = item.person;
+    setDeliveryStatus(item.deliveryStatus);
+    updateFormMode();
+    document.getElementById('add-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('inp-link').focus();
+  }
+
+  function cancelEdit() {
+    editingItemId = null;
+    resetForm();
+    updateFormMode();
   }
 
   function shortLink(url) {
@@ -432,7 +532,9 @@
       const res = await fetch(BIN_URL + '/latest', { headers: { 'X-Master-Key': JSONBIN_API_KEY } });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
-      items = Array.isArray(json.record) ? json.record : [];
+      items = Array.isArray(json.record)
+        ? json.record.map(item => ({ ...item, deliveryStatus: normalizeDeliveryStatus(item.deliveryStatus) }))
+        : [];
       setSyncStatus('ok', 'Synced');
       render();
     } catch(e) {
@@ -497,6 +599,7 @@
       document.getElementById('add-card').style.display = 'block';
       document.getElementById('viewer-notice').style.display = 'none';
     } else {
+      cancelEdit();
       pill.textContent = 'Viewer'; pill.classList.remove('admin');
       btn.textContent = 'Admin login'; btn.classList.remove('logout');
       document.getElementById('add-card').style.display = 'none';
@@ -512,16 +615,22 @@
     const price  = parseFloat(document.getElementById('inp-price').value);
     const person = document.getElementById('inp-person').value.trim();
     if (!link || isNaN(price) || price < 0 || !person) { alert('Please fill in all fields.'); return; }
-    items.push({ id: Date.now(), link, price, person });
-    document.getElementById('inp-link').value = '';
-    document.getElementById('inp-price').value = '';
-    document.getElementById('inp-person').value = '';
+    if (editingItemId !== null) {
+      items = items.map(item => item.id === editingItemId
+        ? { ...item, link, price, person, deliveryStatus: draftDeliveryStatus }
+        : item
+      );
+    } else {
+      items.push({ id: Date.now(), link, price, person, deliveryStatus: draftDeliveryStatus });
+    }
+    cancelEdit();
     render(); await saveData();
   }
 
   async function deleteItem(id) {
     if (!isAdmin) return;
     items = items.filter(i => i.id !== id);
+    if (editingItemId === id) cancelEdit();
     render(); await saveData();
   }
 
@@ -591,21 +700,30 @@
     // Desktop rows
     tbody.innerHTML = filtered.map((item,idx) => {
       const [bg,color] = getColor(item.person);
-      const del = isAdmin ? `<button class="btn-delete" onclick="deleteItem(${item.id})" title="Remove">✕</button>` : '';
+      const delivery = getDeliveryMeta(item.deliveryStatus);
+      const actions = isAdmin ? `<div class="row-actions">
+        <button class="btn-edit" onclick="startEdit(${item.id})" title="Edit">Edit</button>
+        <button class="btn-delete" onclick="deleteItem(${item.id})" title="Remove">✕</button>
+      </div>` : '';
       return `<tr>
         <td style="color:var(--text-muted);font-size:0.68rem">${idx+1}</td>
         <td><a class="article-link" href="${esc(item.link)}" target="_blank" rel="noopener">
           <span class="link-icon">${linkSVG}</span>${esc(shortLink(item.link))}</a></td>
         <td><span class="person-badge" style="background:${bg};color:${color}">${esc(item.person)}</span></td>
         <td class="price-cell">€${Number(item.price).toFixed(2)}</td>
-        <td>${del}</td>
+        <td><span class="delivery-badge ${delivery.className}">${delivery.label}</span></td>
+        <td>${actions}</td>
       </tr>`;
     }).join('');
 
     // Mobile cards
     mlist.innerHTML = filtered.map((item,idx) => {
       const [bg,color] = getColor(item.person);
-      const del = isAdmin ? `<button class="btn-delete" onclick="deleteItem(${item.id})" title="Remove">✕</button>` : '';
+      const delivery = getDeliveryMeta(item.deliveryStatus);
+      const actions = isAdmin ? `<div class="row-actions">
+        <button class="btn-edit" onclick="startEdit(${item.id})" title="Edit">Edit</button>
+        <button class="btn-delete" onclick="deleteItem(${item.id})" title="Remove">✕</button>
+      </div>` : '';
       return `<div class="mobile-item">
         <div class="mobile-top">
           <span class="mobile-num">#${idx+1}</span>
@@ -617,8 +735,9 @@
           <div class="mobile-left">
             <span class="person-badge" style="background:${bg};color:${color}">${esc(item.person)}</span>
             <span class="mobile-price">€${Number(item.price).toFixed(2)}</span>
+            <span class="delivery-badge ${delivery.className}">${delivery.label}</span>
           </div>
-          ${del}
+          ${actions}
         </div>
       </div>`;
     }).join('');
@@ -630,6 +749,8 @@
     if (dl) dl.innerHTML = people.map(p=>`<option value="${esc(p)}">`).join('');
   }
 
+  updateFormMode();
+  setDeliveryStatus(draftDeliveryStatus);
   loadData();
 </script>
 </body>
